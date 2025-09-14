@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Dashboard</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container dashboard-container">
+        <div class="form-container">
+            <h2 id="tenant-name">Dashboard</h2>
+            <p id="welcome-message">Loading...</p>
+            
+            <div id="admin-section" style="display: none;">
+                <h3>Invite New User</h3>
+                <form id="invite-form">
+                    <div class="form-group">
+                        <input type="email" id="email" required placeholder=" ">
+                        <label for="email">User Email</label>
+                        <span class="border"></span>
+                    </div>
+                    <div class="form-group">
+                        <label for="role" style="top: -1.2rem; font-size: 0.8rem; color: var(--primary-color);">Role</label>
+                        <select id="role" style="width: 100%; padding: 0.5rem; border-radius: 4px; border: 1px solid var(--text-color-light); background: transparent;">
+                            <option value="member">Member</option>
+                            <option value="admin">Admin</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="btn">Send Invitation</button>
+                </form>
+                <p id="invite-message" class="message"></p>
+
+                <h3>Current Users</h3>
+                <ul id="user-list"></ul>
+            </div>
+
+            <button id="logout-btn" class="btn" style="background: var(--text-color-light);">Logout</button>
+        </div>
+    </div>
+    <script src="api.js"></script>
+    <script>
+        const tenantNameEl = document.getElementById('tenant-name');
+        const welcomeEl = document.getElementById('welcome-message');
+        const adminSection = document.getElementById('admin-section');
+        const inviteForm = document.getElementById('invite-form');
+        const inviteMsg = document.getElementById('invite-message');
+        const userListEl = document.getElementById('user-list');
+        const logoutBtn = document.getElementById('logout-btn');
+
+        async function populateDashboard() {
+            try {
+                const { data } = await api.get('/auth/me');
+                tenantNameEl.textContent = `${data.tenant.name} Dashboard`;
+                welcomeEl.textContent = `Welcome, ${data.user.name}! (${data.user.role})`;
+
+                if (data.user.role === 'admin') {
+                    adminSection.style.display = 'block';
+                    populateUserList();
+                }
+            } catch (error) {
+                window.location.href = '/login.html';
+            }
+        }
+
+        async function populateUserList() {
+            try {
+                const { data: users } = await api.get('/users');
+                userListEl.innerHTML = '';
+                users.forEach(user => {
+                    const li = document.createElement('li');
+                    li.innerHTML = `
+                        <span>${user.name} (${user.email})</span>
+                        <span class="role-badge">${user.role}</span>
+                    `;
+                    userListEl.appendChild(li);
+                });
+            } catch (error) {
+                console.error("Could not fetch users:", error);
+            }
+        }
+
+        inviteForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const formData = {
+                email: document.getElementById('email').value,
+                role: document.getElementById('role').value,
+            };
+            try {
+                const data = await api.post('/users/invite', formData);
+                inviteMsg.className = 'message success';
+                inviteMsg.textContent = data.message;
+                inviteForm.reset();
+                // Refresh the user list after a successful invite
+                setTimeout(populateUserList, 500);
+            } catch (error) {
+                inviteMsg.className = 'message error';
+                inviteMsg.textContent = error.message;
+            }
+        });
+
+        logoutBtn.addEventListener('click', async () => {
+            await api.get('/auth/logout');
+            window.location.href = '/login.html';
+        });
+
+        document.addEventListener('DOMContentLoaded', populateDashboard);
+    </script>
+</body>
+</html>

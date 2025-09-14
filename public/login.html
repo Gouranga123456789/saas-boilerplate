@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Login</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <div class="form-container">
+            <h2 id="tenant-name">Login</h2>
+            <form id="login-form">
+                <div class="form-group">
+                    <input type="email" id="email" required placeholder=" ">
+                    <label for="email">Email</label>
+                    <span class="border"></span>
+                </div>
+                <div class="form-group">
+                    <input type="password" id="password" required placeholder=" ">
+                    <label for="password">Password</label>
+                    <span class="border"></span>
+                </div>
+                <button type="submit" class="btn">Login</button>
+            </form>
+            <p id="message" class="message"></p>
+        </div>
+    </div>
+    <script src="api.js"></script>
+    <script>
+        document.getElementById('tenant-name').textContent = `Login to ${window.location.hostname.split('.')[0]}`;
+        const form = document.getElementById('login-form');
+        const messageEl = document.getElementById('message');
+        
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const formData = {
+                email: document.getElementById('email').value,
+                password: document.getElementById('password').value,
+            };
+            try {
+                await api.post('/auth/login', formData);
+                window.location.href = '/dashboard.html';
+            } catch (error) {
+                messageEl.className = 'message error';
+                messageEl.textContent = error.message;
+            }
+        });
+    </script>
+</body>
+</html>

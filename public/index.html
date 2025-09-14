@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Your Organization</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <div class="form-container">
+            <h2>Create Your Organization</h2>
+            
+            <form id="create-tenant-form">
+                
+                <div class="form-group">
+                    <input type="text" id="name" required placeholder=" ">
+                    <label for="name">Organization Name</label>
+                    <span class="border"></span>
+                </div>
+                <div class="form-group">
+                    <input type="text" id="subdomain" required placeholder="e.g., acme">
+                    <label for="subdomain">Subdomain</label>
+                    <span class="border"></span>
+                </div>
+
+                <h2 style="font-size: 1.2rem; margin-top: 2rem;">Your Admin Account</h2>
+
+                <div class="form-group">
+                    <input type="text" id="adminName" required placeholder=" ">
+                    <label for="adminName">Your Name</label>
+                    <span class="border"></span>
+                </div>
+                <div class="form-group">
+                    <input type="email" id="adminEmail" required placeholder=" ">
+                    <label for="adminEmail">Your Email</label>
+                    <span class="border"></span>
+                </div>
+                <div class="form-group">
+                    <input type="password" id="adminPassword" required placeholder=" ">
+                    <label for="adminPassword">Password</label>
+                    <span class="border"></span>
+                </div>
+
+                <button type="submit" class="btn">Create Organization</button>
+            </form>
+
+            <p id="message" class="message"></p>
+        </div>
+    </div>
+    <script src="api.js"></script>
+    <script>
+        const form = document.getElementById('create-tenant-form');
+        const messageEl = document.getElementById('message');
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const formData = {
+                name: document.getElementById('name').value,
+                subdomain: document.getElementById('subdomain').value.toLowerCase(),
+                adminName: document.getElementById('adminName').value,
+                adminEmail: document.getElementById('adminEmail').value,
+                adminPassword: document.getElementById('adminPassword').value,
+            };
+            try {
+                const data = await api.post('/tenants', formData);
+                messageEl.className = 'message success';
+                const loginUrl = `http://${formData.subdomain}.localhost:3000/login.html`;
+                messageEl.innerHTML = `Success! Your organization is ready. <a href="${loginUrl}" style="color: var(--success-color);">Click here to log in.</a>`;
+                form.reset();
+            } catch (error) { 
+                messageEl.className = 'message error';
+                messageEl.textContent = error.message;
+            }
+        });
+    </script>
+</body>
+</html>

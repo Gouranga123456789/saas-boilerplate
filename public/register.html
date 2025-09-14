@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Create Your Account</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <div class="form-container">
+            <h2>Create Your Account</h2>
+            <p style="text-align: center; color: var(--text-color-light); margin-top: -1rem; margin-bottom: 2rem;">Complete your registration to join the team.</p>
+            
+            <form id="register-form">
+                <div class="form-group">
+                    <input type="text" id="name" required placeholder=" ">
+                    <label for="name">Full Name</label>
+                    <span class="border"></span>
+                </div>
+                <div class="form-group">
+                    <input type="password" id="password" required placeholder=" ">
+                    <label for="password">Choose a Password</label>
+                    <span class="border"></span>
+                </div>
+                <button type="submit" class="btn">Complete Registration</button>
+            </form>
+            <p id="message" class="message"></p>
+        </div>
+    </div>
+    <script src="api.js"></script>
+    <script>
+        const form = document.getElementById('register-form');
+        const messageEl = document.getElementById('message');
+        const urlParams = new URLSearchParams(window.location.search);
+        const inviteToken = urlParams.get('token');
+
+        if (!inviteToken) {
+            messageEl.className = 'message error';
+            messageEl.textContent = 'Invitation token is missing or invalid.';
+            form.style.display = 'none';
+        }
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const formData = {
+                name: document.getElementById('name').value,
+                password: document.getElementById('password').value,
+                inviteToken: inviteToken
+            };
+            try {
+                await api.post('/auth/register', formData);
+                // On success, redirect to the dashboard
+                window.location.href = '/dashboard.html';
+            } catch (error) {
+                messageEl.className = 'message error';
+                messageEl.textContent = error.message;
+            }
+        });
+    </script>
+</body>
+</html>
